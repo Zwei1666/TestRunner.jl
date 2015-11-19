@@ -29,7 +29,7 @@ facts("Facts groups tests") do
                                                        ("", ["",""]),
                                                        ("",[])
                                                      ]
- @fact TestRunner.get_tests_structure(sampleTests) --> Vector{TestStructureNode}([
+ @fact TestRunner._get_tests_structure(sampleTests) --> Vector{TestStructureNode}([
                                                       FactsNode(7,"First facts group",
                                                       [FactNode(8, "First group first test"),FactNode(9, "First group second failing test")]),
                                                       FactsNode(12,"Second facts group",

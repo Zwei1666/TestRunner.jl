@@ -1,6 +1,6 @@
 module TestRunner
-export TestStructureNode,FactsNode,ContextNode,FactNode
-
+export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure
+import Base.==
 abstract TestStructureNode
 
 type FactsNode <: TestStructureNode
@@ -8,7 +8,7 @@ type FactsNode <: TestStructureNode
     name::AbstractString
     childs::Vector{TestStructureNode}
 end
-
+==(a::FactsNode,b::FactsNode) = a.line == b.line && a.name == b.name && a.childs == b.childs
 type ContextNode <: TestStructureNode
     line::Int
     name::AbstractString
@@ -23,7 +23,7 @@ type FactNode <: TestStructureNode
 end
 FactNode(line::Int, name::AbstractString) = FactNode(line,name,Nullable{Bool}(),Nullable{AbstractString}())
 FactNode(line::Int, name::AbstractString, result::Nullable{Bool}) = FactNode(line, name, result, Nullable{AbstractString}())
-
+==(a::FactsNode, b::FactsNode) = a.line == b.line && a.name == b.name
 
 function get_file_content(testFilePath::AbstractString)
       content = testFilePath |> readall
@@ -79,7 +79,7 @@ function f(ex::Expr, line = 0)
     end
     return results
 end
-get_tests_structure(testFileContent::Expr) =  testFileContent |> f
+_get_tests_structure(testFileContent::Expr) =  testFileContent |> f
 
-
+get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_content |> _get_tests_structure
 end # module
