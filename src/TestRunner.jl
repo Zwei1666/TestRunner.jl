@@ -1,18 +1,20 @@
 module TestRunner
 export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure
 import Base.==
+
 abstract TestStructureNode
 
 type FactsNode <: TestStructureNode
     line::Int
     name::AbstractString
-    childs::Vector{TestStructureNode}
+    children::Vector{TestStructureNode}
 end
-==(a::FactsNode,b::FactsNode) = a.line == b.line && a.name == b.name && a.childs == b.childs
+==(a::FactsNode,b::FactsNode) = a.line == b.line && a.name == b.name && a.children == b.children
+
 type ContextNode <: TestStructureNode
     line::Int
     name::AbstractString
-    childs::Vector{TestStructureNode}
+    children::Vector{TestStructureNode}
 end
 
 type FactNode <: TestStructureNode
@@ -62,12 +64,12 @@ function f(ex::Expr, line = 0)
             line = e.line
         elseif isa(e,Expr)
             if length(e.args)>0 && e.args[1] == :facts
-                childs = f(e.args[2],line)
-                node = FactsNode(line, length(e.args)>2?e.args[3]:"",childs)
+                children = f(e.args[2],line)
+                node = FactsNode(line, length(e.args)>2?e.args[3]:"",children)
                 push!(results, node)
             elseif length(e.args)>0 && e.args[1] == :context
-                childs = f(e.args[2],line)
-                node = ContextNode(line, length(e.args)>2?e.args[3]:"",childs)
+                children = f(e.args[2],line)
+                node = ContextNode(line, length(e.args)>2?e.args[3]:"",children)
                 push!(results, node)
             elseif length(e.args)>0 && e.args[1] == Symbol("@fact")
                node = FactNode(line, length(e.args)>2?e.args[3]:"")
