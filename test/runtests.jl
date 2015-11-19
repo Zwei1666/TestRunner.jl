@@ -42,4 +42,6 @@ end
 
 facts("File loading tests") do
     @fact TestRunner.get_file_content("sampleTests.jl") --> sampleTests
+    @fact 1 --> 2
 end
+FactCheck.exitstatus()
