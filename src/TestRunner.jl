@@ -120,14 +120,14 @@ function get_results(testFilePath::AbstractString)
   close(out_write)
   close(out_read)
   redirect_stdout(original_STDOUT)
-  results = FactCheck.allresults
+  results = copy(FactCheck.allresults)
   empty!(FactCheck.allresults)
   append!(FactCheck.allresults, temp)
   results
 end
 
 function run_all_tests(testFilePath::AbstractString)
-  results = map(x -> isa(Success)? ,get_results(testFilePath))
+  results = map(x -> isa(x, FactCheck.Success)?true:false ,get_results(testFilePath))
   get_tests_structure_with_results(testFilePath, results)
 end
 

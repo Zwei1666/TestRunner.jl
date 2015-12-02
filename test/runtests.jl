@@ -47,13 +47,13 @@ facts("File loading tests") do
 end
 
 facts("Running tests") do
-  @pending TestRunner.run_all_tests("sampleTests.jl") --> Vector{TestStructureNode}([
+  @fact TestRunner.run_all_tests("sampleTests.jl") --> Vector{TestStructureNode}([
                                                        FactsCollectionNode(7,"First facts group",
                                                        [FactNode(8, "First group first test", true),FactNode(9, "First group second failing test", false)]),
                                                        FactsCollectionNode(12,"Second facts group",
                                                        [FactNode(13,"Second group first test", true),FactNode(14, "",true)]),
                                                        FactsCollectionNode(17,"",
-                                                       [FactNode(18,"", true),FactNode(19,"", true)]),
+                                                       [FactNode(18,"", true),FactNode(19,"", false)]),
                                                        FactsCollectionNode(21,"",[])
                                                      ])
 end
