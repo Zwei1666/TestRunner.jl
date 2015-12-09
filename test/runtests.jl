@@ -22,6 +22,8 @@ sampleTests = quote
   end
 end
 
+include("testComparisons.jl")
+
 facts("Facts groups tests") do
   @fact TestRunner.get_facts_groups(sampleTests) --> [
                                                        ("First facts group", ["First group first test", "First group second failing test"]),
@@ -30,13 +32,13 @@ facts("Facts groups tests") do
                                                        ("",[])
                                                      ]
  @fact TestRunner._get_tests_structure(sampleTests) --> Vector{TestStructureNode}([
-                                                      FactsNode(7,"First facts group",
+                                                      FactsCollectionNode(7,"First facts group",
                                                       [FactNode(8, "First group first test"),FactNode(9, "First group second failing test")]),
-                                                      FactsNode(12,"Second facts group",
+                                                      FactsCollectionNode(12,"Second facts group",
                                                       [FactNode(13,"Second group first test"),FactNode(14, "")]),
-                                                      FactsNode(17,"",
+                                                      FactsCollectionNode(17,"",
                                                       [FactNode(18,""),FactNode(19,"")]),
-                                                      FactsNode(21,"",[])
+                                                      FactsCollectionNode(21,"",[])
                                                     ])
 end
 
@@ -44,9 +46,21 @@ facts("File loading tests") do
     @fact TestRunner.get_file_content("sampleTests.jl") --> sampleTests
 end
 
+facts("Running tests") do
+  @fact TestRunner.run_all_tests("sampleTests.jl") --> Vector{TestStructureNode}([
+                                                       FactsCollectionNode(7,"First facts group",
+                                                       [FactNode(8, "First group first test", true),FactNode(9, "First group second failing test", false)]),
+                                                       FactsCollectionNode(12,"Second facts group",
+                                                       [FactNode(13,"Second group first test", true),FactNode(14, "",true)]),
+                                                       FactsCollectionNode(17,"",
+                                                       [FactNode(18,"",true),FactNode(19,"",false)]),
+                                                       FactsCollectionNode(21,"",[])
+                                                     ])
+end
+
 facts("Children function tests") do
   @fact children(FactNode(42, "Test")) --> Vector{TestStructureNode}()
-  @pending children(FactsNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
+  @fact children(FactsCollectionNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
 end
 
 facts("JSON parsing tests") do
