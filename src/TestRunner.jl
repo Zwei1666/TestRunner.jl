@@ -1,5 +1,5 @@
 module TestRunner
-export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure, children, json
+export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure, children, get_tests_structure_as_json
 import Base.==
 
 abstract TestStructureNode
@@ -85,6 +85,8 @@ end
 _get_tests_structure(testFileContent::Expr) =  testFileContent |> f
 
 get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_content |> _get_tests_structure
+
+get_tests_structure_as_json(testFilePath::AbstractString) = testFilePath |> get_tests_structure |> json
 
 children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
 
