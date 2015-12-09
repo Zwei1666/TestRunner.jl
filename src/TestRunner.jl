@@ -1,5 +1,5 @@
 module TestRunner
-export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure, children
+export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure, children, json
 import Base.==
 
 abstract TestStructureNode
@@ -88,4 +88,6 @@ get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_con
 
 children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
 
-end # module
+include("TestRunnerJSON.jl")
+
+end # TestRunner module
