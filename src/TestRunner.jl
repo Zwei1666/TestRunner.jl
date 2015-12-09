@@ -1,5 +1,5 @@
 module TestRunner
-export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure
+export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run-all
 
 using FactCheck
 
@@ -81,6 +81,7 @@ function f(ex::Expr, line = 0)
     end
     return results
 end
+
 function f2(ex::Expr, r, line = 0)
     results = Vector{TestStructureNode}()
     for e in ex.args
@@ -103,12 +104,14 @@ function f2(ex::Expr, r, line = 0)
             end
         end
     end
-    return results
+    results
 end
+
 
 _get_tests_structure(testFileContent::Expr) =  testFileContent |> f
 
 get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_content |> _get_tests_structure
+
 get_tests_structure_with_results(testFilePath, results) = f2(get_file_content(testFilePath), reverse(results))
 
 function get_results(testFilePath::AbstractString)
@@ -130,5 +133,8 @@ function run_all_tests(testFilePath::AbstractString)
   results = map(x -> isa(x, FactCheck.Success)?true:false ,get_results(testFilePath))
   get_tests_structure_with_results(testFilePath, results)
 end
+
+children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
+
 
 end # module
