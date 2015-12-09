@@ -1,5 +1,6 @@
 module TestRunner
-export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run_all
+
+export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run_all, get_tests_structure_as_json, get_tests_results_as_json
 
 using FactCheck
 
@@ -134,7 +135,14 @@ function run_all_tests(testFilePath::AbstractString)
   get_tests_structure_with_results(testFilePath, results)
 end
 
+
 children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
+
+include("TestRunnerJSON.jl")
+
+get_tests_structure_as_json(testFilePath::AbstractString) = testFilePath |> get_tests_structure |> json
+
+get_tests_results_as_json(testFilePath::AbstractString) = testFilePath |> run_all_tests |> json
 
 
 end # module

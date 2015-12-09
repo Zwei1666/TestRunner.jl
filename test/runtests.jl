@@ -63,4 +63,8 @@ facts("Children function tests") do
   @fact children(FactsCollectionNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
 end
 
+facts("JSON parsing tests") do
+  include("TestRunnerJSON.tests.jl")
+end
+
 FactCheck.exitstatus()
