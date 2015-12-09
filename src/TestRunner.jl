@@ -1,5 +1,5 @@
 module TestRunner
-export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run-all
+export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run_all
 
 using FactCheck
 

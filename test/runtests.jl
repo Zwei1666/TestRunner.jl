@@ -53,13 +53,14 @@ facts("Running tests") do
                                                        FactsCollectionNode(12,"Second facts group",
                                                        [FactNode(13,"Second group first test", true),FactNode(14, "",true)]),
                                                        FactsCollectionNode(17,"",
+                                                       [FactNode(18,"",true),FactNode(19,"",false)]),
                                                        FactsCollectionNode(21,"",[])
                                                      ])
 end
 
 facts("Children function tests") do
   @fact children(FactNode(42, "Test")) --> Vector{TestStructureNode}()
-  @pending children(FactsCollectionNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
+  @fact children(FactsCollectionNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
 end
 
 FactCheck.exitstatus()
