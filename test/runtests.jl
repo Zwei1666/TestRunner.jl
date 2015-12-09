@@ -43,4 +43,10 @@ end
 facts("File loading tests") do
     @fact TestRunner.get_file_content("sampleTests.jl") --> sampleTests
 end
+
+facts("Children function tests") do
+  @fact children(FactNode(42, "Test")) --> Vector{TestStructureNode}()
+  @pending children(FactsNode(17,"", [FactNode(18,""),FactNode(19,"")])) --> Vector{TestStructureNode}([FactNode(18,""),FactNode(19,"")])
+end
+
 FactCheck.exitstatus()

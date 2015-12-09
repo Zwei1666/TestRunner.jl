@@ -1,5 +1,5 @@
 module TestRunner
-export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure
+export TestStructureNode,FactsNode,ContextNode,FactNode, get_tests_structure, children
 import Base.==
 
 abstract TestStructureNode
@@ -81,7 +81,11 @@ function f(ex::Expr, line = 0)
     end
     return results
 end
+
 _get_tests_structure(testFileContent::Expr) =  testFileContent |> f
 
 get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_content |> _get_tests_structure
+
+children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
+
 end # module
