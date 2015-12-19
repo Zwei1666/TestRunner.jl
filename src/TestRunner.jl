@@ -1,6 +1,6 @@
 module TestRunner
 
-export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run_all, get_tests_structure_as_json, get_tests_results_as_json
+export TestStructureNode, FactsCollectionNode, ContextNode, FactNode, get_tests_structure, children, run_all, get_tests_structure_as_json, get_tests_results_as_json
 
 using FactCheck
 
@@ -31,31 +31,6 @@ FactNode(line::Int, name::AbstractString, result::Bool) = FactNode(line, name, N
 function get_file_content(testFilePath::AbstractString)
       content = testFilePath |> readall
       "begin\n"*content*"\nend" |> parse
-end
-expand_expression(e::Expr) = map((arg -> typeof(arg) == Expr? expand_expression(arg):arg), e.args)
-
-function find_subparts(tree::Array, a::Symbol, results::Array = [])
-   if any(x -> x==a, tree)
-     push!(results, tree)
-   end
-   for node in tree
-     if typeof(node) <: Array
-       find_subparts(node, a, results)
-     end
-   end
-   results
-end
-
-function get_message(a::Array)
-  message = last(a)
-  typeof(message)<:AbstractString? message:""
-end
-
-get_facts(a::Array) = map(get_message, find_subparts(a, Symbol("@fact")))
-function get_facts_groups(testFileContent::Expr)
-  expanded_expression = testFileContent |> expand_expression
-  facts_groups = find_subparts(expanded_expression, :facts)
-  map( group -> (get_message(group), get_facts(group)) ,facts_groups)
 end
 
 function f(ex::Expr, line = 0)
@@ -143,6 +118,5 @@ include("TestRunnerJSON.jl")
 get_tests_structure_as_json(testFilePath::AbstractString) = testFilePath |> get_tests_structure |> json
 
 get_tests_results_as_json(testFilePath::AbstractString) = testFilePath |> run_all_tests |> json
-
 
 end # module
