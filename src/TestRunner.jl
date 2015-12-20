@@ -1,6 +1,6 @@
 module TestRunner
 
-export TestStructureNode,FactsCollectionNode,ContextNode,FactNode, get_tests_structure, children, run_all, get_tests_structure_as_json, get_tests_results_as_json
+export TestStructureNode, FactsCollectionNode, ContextNode, FactNode, get_tests_structure, children, run_all_tests, get_tests_structure_as_json, get_tests_results_as_json
 
 using FactCheck
 
@@ -27,95 +27,67 @@ end
 FactNode(line::Int, name::AbstractString) = FactNode(line,name,Nullable{Bool}(),Nullable{AbstractString}())
 FactNode(line::Int, name::AbstractString, result::Nullable{Bool}) = FactNode(line, name, result, Nullable{AbstractString}())
 FactNode(line::Int, name::AbstractString, result::Bool) = FactNode(line, name, Nullable{Bool}(result), Nullable{AbstractString}())
+function FactNode(line::Int, name::AbstractString, result::FactCheck.Result)
+  if isa(result, FactCheck.Pending)
+    r = Nullable{Bool}()
+    details = "Pending"
+  elseif isa(result, FactCheck.Error)
+    r = false
+    details = result.meta.msg*"\n"*sprint(showerror, result.err, result.backtrace)
+  else
+    r = isa(result, FactCheck.Success)
+    details = result.meta.msg
+  end
+  FactNode(line, name, r, details)
+end
 
-function get_file_content(testFilePath::AbstractString)
+function _fixLineNumbers(expressionTreeNode::Expr)
+  for i in 1:length(expressionTreeNode.args)
+      if isa(expressionTreeNode.args[i], LineNumberNode)
+          expressionTreeNode.args[i] = LineNumberNode(expressionTreeNode.args[i].file, expressionTreeNode.args[i].line -1)
+      elseif isa(expressionTreeNode.args[i], Expr)
+        _fixLineNumbers(expressionTreeNode.args[i])
+      end
+  end
+end
+
+function _get_file_content(testFilePath::AbstractString)
       content = testFilePath |> readall
-      "begin\n"*content*"\nend" |> parse
-end
-expand_expression(e::Expr) = map((arg -> typeof(arg) == Expr? expand_expression(arg):arg), e.args)
-
-function find_subparts(tree::Array, a::Symbol, results::Array = [])
-   if any(x -> x==a, tree)
-     push!(results, tree)
-   end
-   for node in tree
-     if typeof(node) <: Array
-       find_subparts(node, a, results)
-     end
-   end
-   results
+      parsedContent = "begin\n"*content*"\nend" |> parse
+      _fixLineNumbers(parsedContent)
+      parsedContent
 end
 
-function get_message(a::Array)
-  message = last(a)
-  typeof(message)<:AbstractString? message:""
-end
-
-get_facts(a::Array) = map(get_message, find_subparts(a, Symbol("@fact")))
-function get_facts_groups(testFileContent::Expr)
-  expanded_expression = testFileContent |> expand_expression
-  facts_groups = find_subparts(expanded_expression, :facts)
-  map( group -> (get_message(group), get_facts(group)) ,facts_groups)
-end
-
-function f(ex::Expr, line = 0)
-    results = Vector{TestStructureNode}()
-    for e in ex.args
-        if isa(e, LineNumberNode)
-            line = e.line
-        elseif isa(e,Expr)
-            if length(e.args)>0 && e.args[1] == :facts
-                children = f(e.args[2],line)
-                node = FactsCollectionNode(line, length(e.args)>2?e.args[3]:"",children)
-                push!(results, node)
-            elseif length(e.args)>0 && e.args[1] == :context
-                children = f(e.args[2],line)
-                node = ContextNode(line, length(e.args)>2?e.args[3]:"",children)
-                push!(results, node)
-            elseif length(e.args)>0 && e.args[1] == Symbol("@fact")
-               node = FactNode(line, length(e.args)>2?e.args[3]:"")
-               push!(results, node)
+function _get_tests_structure(expressionTreeNode::Expr, testsResults::Vector{FactCheck.Result} = FactCheck.Result[] , line = 0)
+    result = Vector{TestStructureNode}()
+    getName = (e) -> length(e.args)>2?e.args[3]:""
+    for treeNode in expressionTreeNode.args
+        if isa(treeNode, LineNumberNode)
+            line = treeNode.line
+        elseif isa(treeNode, Expr)
+            if length(treeNode.args)>0 && treeNode.args[1] == :facts
+                children = _get_tests_structure(treeNode.args[2], testsResults, line)
+                node = FactsCollectionNode(line, getName(treeNode), children)
+                push!(result, node)
+            elseif length(treeNode.args)>0 && treeNode.args[1] == :context
+                children = _get_tests_structure(treeNode.args[2], testsResults, line)
+                node = ContextNode(line, getName(treeNode), children)
+                push!(result, node)
+            elseif length(treeNode.args)>0 && treeNode.args[1] == Symbol("@fact")
+               node = isempty(testsResults)? FactNode(line, getName(treeNode)):FactNode(line, getName(treeNode),  pop!(testsResults))
+               push!(result, node)
             else
-                append!(results, f(e, line))
+                append!(result, _get_tests_structure(treeNode, testsResults, line))
             end
         end
     end
-    return results
-end
-
-function f2(ex::Expr, r, line = 0)
-    results = Vector{TestStructureNode}()
-    for e in ex.args
-        if isa(e, LineNumberNode)
-            line = e.line
-        elseif isa(e,Expr)
-            if length(e.args)>0 && e.args[1] == :facts
-                children = f2(e.args[2],r,line)
-                node = FactsCollectionNode(line, length(e.args)>2?e.args[3]:"",children)
-                push!(results, node)
-            elseif length(e.args)>0 && e.args[1] == :context
-                children = f2(e.args[2],r,line)
-                node = ContextNode(line, length(e.args)>2?e.args[3]:"",children)
-                push!(results, node)
-            elseif length(e.args)>0 && e.args[1] == Symbol("@fact")
-               node = FactNode(line, length(e.args)>2?e.args[3]:"", pop!(r))
-               push!(results, node)
-            else
-                append!(results, f2(e, r, line))
-            end
-        end
-    end
-    results
+    result
 end
 
 
-_get_tests_structure(testFileContent::Expr) =  testFileContent |> f
+get_tests_structure(testFilePath::AbstractString) = testFilePath |> _get_file_content |> _get_tests_structure
 
-get_tests_structure(testFilePath::AbstractString) = testFilePath |> get_file_content |> _get_tests_structure
-
-get_tests_structure_with_results(testFilePath, results) = f2(get_file_content(testFilePath), reverse(results))
-
-function get_results(testFilePath::AbstractString)
+function _get_results(testFilePath::AbstractString)
   temp  = FactCheck.allresults
   FactCheck.clear_results()
   original_STDOUT = STDOUT
@@ -127,14 +99,14 @@ function get_results(testFilePath::AbstractString)
   results = copy(FactCheck.allresults)
   empty!(FactCheck.allresults)
   append!(FactCheck.allresults, temp)
-  results
+  results |> reverse
 end
 
 function run_all_tests(testFilePath::AbstractString)
-  results = map(x -> isa(x, FactCheck.Success)?true:false ,get_results(testFilePath))
-  get_tests_structure_with_results(testFilePath, results)
+  results = _get_results(testFilePath)
+  content = _get_file_content(testFilePath)
+  _get_tests_structure(content, results)
 end
-
 
 children(node::TestStructureNode) = isa(node, FactNode) ? Vector{TestStructureNode}() : node.children
 
@@ -143,6 +115,5 @@ include("TestRunnerJSON.jl")
 get_tests_structure_as_json(testFilePath::AbstractString) = testFilePath |> get_tests_structure |> json
 
 get_tests_results_as_json(testFilePath::AbstractString) = testFilePath |> run_all_tests |> json
-
 
 end # module
