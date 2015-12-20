@@ -1,6 +1,5 @@
 using TestRunner
 using FactCheck
-
 sampleTests = quote
   using FactCheck
 
@@ -24,33 +23,51 @@ end
 
 include("testComparisons.jl")
 sampleTestsFilePath = "FileWithSampleTests.jl"
+sampleExceptionFailingTestFilePath = "FileWithExceptionFailingTest.jl"
+
 facts("Test handling tests") do
   context("File loading") do
-      @fact TestRunner.get_file_content(sampleTestsFilePath) --> sampleTests
+      @fact TestRunner._get_file_content(sampleTestsFilePath) --> sampleTests
   end
 
   context("Structure parsing") do
    @fact TestRunner._get_tests_structure(sampleTests) --> Vector{TestStructureNode}([
-                                                        FactsCollectionNode(7,"First facts group",
-                                                        [FactNode(8, "First group first test"),FactNode(9, "First group second failing test")]),
-                                                        FactsCollectionNode(12,"Second facts group",
-                                                        [FactNode(13,"Second group first test"),FactNode(14, "")]),
-                                                        FactsCollectionNode(17,"",
-                                                        [FactNode(18,""),FactNode(19,"")]),
-                                                        FactsCollectionNode(21,"",[])
+                                                        FactsCollectionNode(6,"First facts group",
+                                                        [FactNode(7, "First group first test"),FactNode(8, "First group second failing test")]),
+                                                        FactsCollectionNode(11,"Second facts group",
+                                                        [FactNode(12,"Second group first test"),FactNode(13, "")]),
+                                                        FactsCollectionNode(16,"",
+                                                        [FactNode(17,""),FactNode(18,"")]),
+                                                        FactsCollectionNode(20,"",[])
                                                       ])
-  end
+
+  @fact get_tests_structure(sampleTestsFilePath) --> Vector{TestStructureNode}([
+                                                       FactsCollectionNode(6,"First facts group",
+                                                       [FactNode(7, "First group first test"),FactNode(8, "First group second failing test")]),
+                                                       FactsCollectionNode(11,"Second facts group",
+                                                       [FactNode(12,"Second group first test"),FactNode(13, "")]),
+                                                       FactsCollectionNode(16,"",
+                                                       [FactNode(17,""),FactNode(18,"")]),
+                                                       FactsCollectionNode(20,"",[])
+                                                     ]) "File structure parsing"
+ end
+
 
   context("Tests running") do
-    @fact TestRunner.run_all_tests(sampleTestsFilePath) --> Vector{TestStructureNode}([
-                                                         FactsCollectionNode(7,"First facts group",
-                                                         [FactNode(8, "First group first test", true),FactNode(9, "First group second failing test", false)]),
-                                                         FactsCollectionNode(12,"Second facts group",
-                                                         [FactNode(13,"Second group first test", true),FactNode(14, "",true)]),
-                                                         FactsCollectionNode(17,"",
-                                                         [FactNode(18,"",true),FactNode(19,"",false)]),
-                                                         FactsCollectionNode(21,"",[])
+    @fact run_all_tests(sampleTestsFilePath) --> Vector{TestStructureNode}([
+                                                         FactsCollectionNode(6,"First facts group",
+                                                         [FactNode(7, "First group first test", true, "First group first test"),FactNode(8, "First group second failing test", false, "First group second failing test")]),
+                                                         FactsCollectionNode(11,"Second facts group",
+                                                         [FactNode(12,"Second group first test", true, "Second group first test"),FactNode(13, "",true)]),
+                                                         FactsCollectionNode(16,"",
+                                                         [FactNode(17,"",true),FactNode(18,"",false)]),
+                                                         FactsCollectionNode(20,"",[])
                                                        ])
+  end
+
+  context("Exception handling") do
+    message = "TestName\nDoge\n in f at $(abspath(sampleExceptionFailingTestFilePath)):2"
+    @fact run_all_tests(sampleExceptionFailingTestFilePath) --> Vector{TestStructureNode}([FactsCollectionNode(3,"",[FactNode(4,"TestName", false, message)])])
   end
 
   context("Children acquiring") do
