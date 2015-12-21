@@ -21,7 +21,10 @@ sampleTests = quote
   end
 end
 
+using TestRunner: TestStructureNode, FactsCollectionNode, FactNode, ContextNode
+
 include("testComparisons.jl")
+
 sampleTestsFilePath = "FileWithSampleTests.jl"
 sampleExceptionFailingTestFilePath = "FileWithExceptionFailingTest.jl"
 
