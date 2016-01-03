@@ -40,7 +40,9 @@ FactNode(line::Int, name::AbstractString, result::FactCheck.Failure) = FactNode(
 FactNode(line::Int, name::AbstractString, result::FactCheck.Error)   = FactNode(line, name, test_error,   _get_details(line, result), sprint(showerror, result.err, result.backtrace))
 FactNode(line::Int, name::AbstractString) = FactNode(line, name, test_not_run)
 
-_get_details(line::Int, result::FactCheck.Result) = replace(sprint(show, result), r"line:(-?\d+)", "line:$line")
+_get_details(line::Int, result::FactCheck.Result) = _replace_line_number(line, sprint(show, result)) |> _strip_ascii_escape_codes
+_replace_line_number(line::Int, s::AbstractString) = replace(s, r"line:(-?\d+)", "line:$line")
+_strip_ascii_escape_codes(s::AbstractString) = replace(s, r"\x1b[^m]*m", "")
 
 function _fixLineNumbers(expressionTreeNode::Expr)
   for i in 1:length(expressionTreeNode.args)
