@@ -1,10 +1,16 @@
 module TestRunner
 
-export  get_tests_structure, run_all_tests, get_tests_structure_as_json, get_tests_results_as_json, children, line, name, result, details
+export  get_tests_structure, run_all_tests, get_tests_structure_as_json, get_tests_results_as_json, children, line, name, result, details, test_success, test_failure, test_error, test_pending, test_not_run
 
 using FactCheck
 
 abstract TestStructureNode
+
+@enum RESULT test_success test_failure test_error test_pending test_not_run
+
+type RootNode <: TestStructureNode
+  children::Vector{TestStructureNode}
+end
 
 type FactsCollectionNode <: TestStructureNode
     line::Int
@@ -21,26 +27,33 @@ end
 type FactNode <: TestStructureNode
     line::Int
     name::AbstractString
-    result::Nullable{Bool}
-    details::Nullable{AbstractString}
-end
-FactNode(line::Int, name::AbstractString) = FactNode(line,name,Nullable{Bool}(),Nullable{AbstractString}())
-FactNode(line::Int, name::AbstractString, result::Nullable{Bool}) = FactNode(line, name, result, Nullable{AbstractString}())
-FactNode(line::Int, name::AbstractString, result::Bool) = FactNode(line, name, Nullable{Bool}(result), Nullable{AbstractString}())
-function FactNode(line::Int, name::AbstractString, result::FactCheck.Result)
-  if isa(result, FactCheck.Pending)
-    r = Nullable{Bool}()
-    details = "Pending"
-  elseif isa(result, FactCheck.Error)
-    r = false
-    details = result.meta.msg*"\n"*sprint(showerror, result.err, result.backtrace)
-  else
-    r = isa(result, FactCheck.Success)
-    details = result.meta.msg
-  end
-  FactNode(line, name, r, details)
+
+    result::RESULT
+    details::AbstractString
+    stacktrace::AbstractString
 end
 
+FactNode(line::Int, name::AbstractString, result::RESULT) = FactNode(line, name, result, "")
+FactNode(line::Int, name::AbstractString, result::RESULT, details::AbstractString) = FactNode(line, name, result, details, "")
+
+# Zastanowić się nad wstawieniem ciała assercji do details
+FactNode(line::Int, name::AbstractString, result::FactCheck.Success) = FactNode(line, name, test_success)
+FactNode(line::Int, name::AbstractString, result::FactCheck.Pending) = FactNode(line, name, test_pending)
+FactNode(line::Int, name::AbstractString) = FactNode(line, name, test_not_run)
+
+function FactNode(line::Int, name::AbstractString, result::FactCheck.Failure)
+  # Dodać treść assercji do details
+  FactNode(line, name, test_failure)
+end
+
+function FactNode(line::Int, name::AbstractString, result::FactCheck.Error)
+  details = result.meta.msg
+  FactNode(line, name, test_error, details, sprint(showerror, result.err, result.backtrace))
+end
+
+
+# function _fixLineNumbers(expressionTreeNode::Expr)
+#function _fixLineNumbers(expressionTreeNode)
 function _fixLineNumbers(expressionTreeNode::Expr)
   for i in 1:length(expressionTreeNode.args)
       if isa(expressionTreeNode.args[i], LineNumberNode)
@@ -85,7 +98,7 @@ function _get_tests_structure(expressionTreeNode::Expr, testsResults::Vector{Fac
 end
 
 
-get_tests_structure(testFilePath::AbstractString) = testFilePath |> _get_file_content |> _get_tests_structure
+get_tests_structure(testFilePath::AbstractString) = testFilePath |> _get_file_content |> _get_tests_structure |> RootNode
 
 function _get_results(testFilePath::AbstractString)
   temp  = FactCheck.allresults
@@ -105,7 +118,7 @@ end
 function run_all_tests(testFilePath::AbstractString)
   results = _get_results(testFilePath)
   content = _get_file_content(testFilePath)
-  _get_tests_structure(content, results)
+  _get_tests_structure(content, results) |> RootNode
 end
 
 children(node::FactNode) = Vector{TestStructureNode}()
