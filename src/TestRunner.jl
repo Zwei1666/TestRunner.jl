@@ -34,21 +34,13 @@ end
 
 FactNode(line::Int, name::AbstractString, result::RESULT) = FactNode(line, name, result, "")
 FactNode(line::Int, name::AbstractString, result::RESULT, details::AbstractString) = FactNode(line, name, result, details, "")
-
-# Zastanowić się nad wstawieniem ciała assercji do details
-FactNode(line::Int, name::AbstractString, result::FactCheck.Success) = FactNode(line, name, test_success)
-FactNode(line::Int, name::AbstractString, result::FactCheck.Pending) = FactNode(line, name, test_pending)
+FactNode(line::Int, name::AbstractString, result::FactCheck.Success) = FactNode(line, name, test_success, _get_details(line, result))
+FactNode(line::Int, name::AbstractString, result::FactCheck.Pending) = FactNode(line, name, test_pending, _get_details(line, result))
+FactNode(line::Int, name::AbstractString, result::FactCheck.Failure) = FactNode(line, name, test_failure, _get_details(line, result))
+FactNode(line::Int, name::AbstractString, result::FactCheck.Error)   = FactNode(line, name, test_error,   _get_details(line, result), sprint(showerror, result.err, result.backtrace))
 FactNode(line::Int, name::AbstractString) = FactNode(line, name, test_not_run)
 
-function FactNode(line::Int, name::AbstractString, result::FactCheck.Failure)
-  # Dodać treść assercji do details
-  FactNode(line, name, test_failure)
-end
-
-function FactNode(line::Int, name::AbstractString, result::FactCheck.Error)
-  details = result.meta.msg
-  FactNode(line, name, test_error, details, sprint(showerror, result.err, result.backtrace))
-end
+_get_details(line::Int, result::FactCheck.Result) = replace(sprint(show, result), r"line:(-?\d+)", "line:$line")
 
 function _fixLineNumbers(expressionTreeNode::Expr)
   for i in 1:length(expressionTreeNode.args)

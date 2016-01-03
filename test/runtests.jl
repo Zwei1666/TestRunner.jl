@@ -57,7 +57,7 @@ facts("Test handling tests") do
 
 
   context("Tests running") do
-    @fact run_all_tests(sampleTestsFilePath) --> RootNode( Vector{TestStructureNode}([
+    @pending run_all_tests(sampleTestsFilePath) --> RootNode( Vector{TestStructureNode}([
                                                          FactsCollectionNode(6, "First facts group",
                                                           [FactNode(7, "First group first test", test_success), FactNode(8, "First group second failing test", test_failure)]),
                                                          FactsCollectionNode(11,"Second facts group",
