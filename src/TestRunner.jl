@@ -46,10 +46,11 @@ function _fixLineNumbers(expressionTreeNode::Expr)
   for i in 1:length(expressionTreeNode.args)
       expressionTreeNode.args[i] = _fixLineNumbers(expressionTreeNode.args[i])
   end
+
   expressionTreeNode
 end
-_fixLineNumbers(expressionTreeNode::LineNumberNode) = LineNumberNode(expressionTreeNode.file, expressionTreeNode.line -1)
-_fixLineNumbers(expressionTreeNode) = expressionTreeNode
+_fixLineNumbers(lineNumberNode::LineNumberNode) = LineNumberNode(lineNumberNode.file, lineNumberNode.line - 1)
+_fixLineNumbers(othernNode) = othernNode
 
 _get_file_content(testFilePath::AbstractString) = testFilePath |> readall |> (content -> "begin\n" * content * "\nend") |> parse |> _fixLineNumbers
 
@@ -104,7 +105,9 @@ end
 
 children(node::FactNode) = Vector{TestStructureNode}()
 children(node::TestStructureNode) =  node.children
+line(node::RootNode) = 0
 line(node::TestStructureNode) = node.line
+name(node::RootNode) = "root"
 name(node::TestStructureNode) = node.name
 result(node::FactNode) = node.result
 details(node::FactNode) = node.details
