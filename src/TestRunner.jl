@@ -71,8 +71,11 @@ function _get_tests_structure(expressionTreeNode::Expr, testsResults::Vector{Fac
                 node = ContextNode(line, getName(treeNode), children)
                 push!(result, node)
             elseif length(treeNode.args)>0 && treeNode.args[1] == Symbol("@fact")
-               node = isempty(testsResults)? FactNode(line, getName(treeNode)):FactNode(line, getName(treeNode),  pop!(testsResults))
+               node =  FactNode(line, getName(treeNode), isempty(testsResults)?test_not_run:pop!(testsResults))
                push!(result, node)
+            elseif length(treeNode.args)>0 && treeNode.args[1] == Symbol("@pending")
+                node = FactNode(line, getName(treeNode), test_pending)
+                push!(result, node)
             else
                 append!(result, _get_tests_structure(treeNode, testsResults, line))
             end
