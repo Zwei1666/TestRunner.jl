@@ -127,6 +127,7 @@ line(node::TestStructureNode) = node.line
 name(node::TestStructureNode) = node.name
 result(node::FactNode) = node.result
 details(node::FactNode) = node.details
+stacktrace(node::FactNode) = node.stacktrace
 
 include("TestRunnerJSON.jl")
 

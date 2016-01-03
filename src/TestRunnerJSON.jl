@@ -1,38 +1,32 @@
 using JSON
 
-function json(testStructureNodes::Array{TestRunner.TestStructureNode})
-  treeDictionary = [to_dict(node) for node in testStructureNodes]
-  JSON.json(treeDictionary)
-end
+json(rootNode::RootNode) = map(to_dict, children(rootNode)) |> JSON.json
 
 function to_dict(factGroup::FactsCollectionNode)
-
-  childFactGroups = filter(child -> isa(child, TestRunner.FactsCollectionNode), factGroup.children)
-  childFacts = filter(child -> isa(child, TestRunner.FactNode), factGroup.children)
-  childContexts = filter(child -> isa(child, TestRunner.ContextNode), factGroup.children)
+  _children = factGroup |> children
+  childFactGroups = filter(child -> isa(child, TestRunner.FactsCollectionNode), _children)
+  childFacts = filter(child -> isa(child, TestRunner.FactNode), _children)
+  childContexts = filter(child -> isa(child, TestRunner.ContextNode), _children)
 
   Dict(
-    "name" => factGroup.name,
-    "line" => factGroup.line,
-    "factGroups" => [to_dict(node) for node in childFactGroups],
-    "facts" => [to_dict(node) for node in childFacts],
-    "contexts" => [to_dict(node) for node in childContexts]
+    "name"       => factGroup |> name,
+    "line"       => factGroup |> line,
+    "factGroups" => map(to_dict, childFactGroups),
+    "facts"      => map(to_dict, childFacts),
+    "contexts"   => map(to_dict, childContexts)
   )
 end
 
-function to_dict(contextNode::ContextNode)
-  Dict(
-    "name" => contextNode.name,
-    "line" => contextNode.line,
-    "facts" => [to_dict(node) for node in contextNode.children]
+to_dict(contextNode::ContextNode) = Dict(
+    "name"  => contextNode |> name,
+    "line"  => contextNode |> line,
+    "facts" => map(to_dict, children(contextNode))
   )
-end
 
-function to_dict(factNode::FactNode)
-  Dict(
-    "name" => factNode.name,
-    "line" => factNode.line,
-    "succeeded" => isnull(factNode.result)? nothing : get(factNode.result),
-    "details" => isnull(factNode.details)? nothing : get(factNode.details)
+to_dict(factNode::FactNode) = Dict(
+    "name"         => factNode |> name,
+    "line"         => factNode |> line,
+    "result"       => factNode |> result |> string,
+    "details"      => factNode |> details,
+    "stacktrace"   => factNode |> stacktrace
   )
-end

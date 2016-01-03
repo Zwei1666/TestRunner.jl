@@ -79,8 +79,8 @@ facts("Test handling tests") do
   end
 end
 
-#facts("JSON parsing tests") do
-  #include("TestRunnerJSON.tests.jl")
-#end
+facts("JSON parsing tests") do
+  include("TestRunnerJSON.tests.jl")
+end
 
 FactCheck.exitstatus()

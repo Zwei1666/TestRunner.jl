@@ -1,21 +1,21 @@
 context("FactNode parsing") do
 ""
-  @fact TestRunner.to_dict(FactNode(18,"test name")) -->
-    Dict("name" => "test name", "line" => 18, "succeeded" => nothing, "details" => nothing)
+  @fact TestRunner.to_dict(FactNode(18, "test name")) -->
+    Dict("name" => "test name", "line" => 18, "result" => "test_not_run", "details" => "", "stacktrace" => "")
 
-  @fact TestRunner.to_dict(FactNode(18,"test name", Nullable{Bool}(true))) -->
-    Dict("name" => "test name", "line" => 18, "succeeded" => true, "details" => nothing )
+  @fact TestRunner.to_dict(FactNode(18, "test name", test_success)) -->
+    Dict("name" => "test name", "line" => 18, "result" => "test_success", "details" => "", "stacktrace" => "" )
 
-  @fact TestRunner.to_dict(FactNode(18,"test name", Nullable{Bool}(false))) -->
-    Dict("name" => "test name", "line" => 18, "succeeded" => false, "details" => nothing )
+  @fact TestRunner.to_dict(FactNode(18,"test name", test_failure)) -->
+    Dict("name" => "test name", "line" => 18, "result" => "test_failure", "details" => "", "stacktrace" => "" )
 
-  @fact TestRunner.to_dict(FactNode(18,"test name", Nullable{Bool}(false), "Test details")) -->
-    Dict("name" => "test name", "line" => 18, "succeeded" => false, "details" => "Test details" )
+  @fact TestRunner.to_dict(FactNode(18,"test name", test_failure, "Test details")) -->
+    Dict("name" => "test name", "line" => 18, "result" => "test_failure", "details" => "Test details", "stacktrace" => "")
 
 end
 
 context("FactsCollectionNode parsing") do
-  @fact TestRunner.to_dict(FactsCollectionNode(10,"some facts group", [])) -->
+  @fact TestRunner.to_dict(FactsCollectionNode(10, "some facts group", [])) -->
     Dict(
     "name" => "some facts group",
     "line" => 10,
@@ -24,7 +24,7 @@ context("FactsCollectionNode parsing") do
 
   @fact TestRunner.to_dict(FactsCollectionNode(1,"fg", [FactNode(18,"test node")])) -->
     Dict(
-    "facts" => [Dict("name" => "test node", "line" => 18, "succeeded" => nothing, "details" => nothing)],
+    "facts" => [Dict("name" => "test node", "line" => 18, "result" => "test_not_run", "details" => "", "stacktrace" => "")],
     "name" => "fg","line" => 1,
     "contexts" => [], "factGroups" => [])
 
@@ -55,7 +55,7 @@ context("ContextNode parsing") do
     Dict(
     "line" => 1,
     "name" => "c",
-    "facts" => [Dict("name" => "fact node", "line" => 3, "succeeded" => nothing, "details" => nothing)]
+    "facts" => [Dict("name" => "fact node", "line" => 3, "result" => "test_not_run", "details" => "", "stacktrace" => "")]
     )
 end
 
