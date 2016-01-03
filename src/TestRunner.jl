@@ -27,7 +27,6 @@ end
 type FactNode <: TestStructureNode
     line::Int
     name::AbstractString
-
     result::RESULT
     details::AbstractString
     stacktrace::AbstractString
@@ -51,25 +50,16 @@ function FactNode(line::Int, name::AbstractString, result::FactCheck.Error)
   FactNode(line, name, test_error, details, sprint(showerror, result.err, result.backtrace))
 end
 
-
-# function _fixLineNumbers(expressionTreeNode::Expr)
-#function _fixLineNumbers(expressionTreeNode)
 function _fixLineNumbers(expressionTreeNode::Expr)
   for i in 1:length(expressionTreeNode.args)
-      if isa(expressionTreeNode.args[i], LineNumberNode)
-          expressionTreeNode.args[i] = LineNumberNode(expressionTreeNode.args[i].file, expressionTreeNode.args[i].line -1)
-      elseif isa(expressionTreeNode.args[i], Expr)
-        _fixLineNumbers(expressionTreeNode.args[i])
-      end
+      expressionTreeNode.args[i] = _fixLineNumbers(expressionTreeNode.args[i])
   end
+  expressionTreeNode
 end
+_fixLineNumbers(expressionTreeNode::LineNumberNode) = LineNumberNode(expressionTreeNode.file, expressionTreeNode.line -1)
+_fixLineNumbers(expressionTreeNode) = expressionTreeNode
 
-function _get_file_content(testFilePath::AbstractString)
-      content = testFilePath |> readall
-      parsedContent = "begin\n"*content*"\nend" |> parse
-      _fixLineNumbers(parsedContent)
-      parsedContent
-end
+_get_file_content(testFilePath::AbstractString) = testFilePath |> readall |> (content -> "begin\n" * content * "\nend") |> parse |> _fixLineNumbers
 
 function _get_tests_structure(expressionTreeNode::Expr, testsResults::Vector{FactCheck.Result} = FactCheck.Result[] , line = 0)
     result = Vector{TestStructureNode}()
@@ -96,7 +86,6 @@ function _get_tests_structure(expressionTreeNode::Expr, testsResults::Vector{Fac
     end
     result
 end
-
 
 get_tests_structure(testFilePath::AbstractString) = testFilePath |> _get_file_content |> _get_tests_structure |> RootNode
 
