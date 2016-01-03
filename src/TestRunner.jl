@@ -1,6 +1,6 @@
 module TestRunner
 
-export  get_tests_structure, run_all_tests, get_tests_structure_as_json, get_tests_results_as_json, children, line, name, result, details, test_success, test_failure, test_error, test_pending, test_not_run
+export  get_tests_structure, run_all_tests, get_tests_structure_as_json, get_tests_results_as_json, children, line, name, result, details, RESULT, test_success, test_failure, test_error, test_pending, test_not_run
 
 using FactCheck
 
