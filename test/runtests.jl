@@ -21,7 +21,7 @@ sampleTests = quote
   end
 end
 
-using TestRunner: TestStructureNode, FactsCollectionNode, FactNode, ContextNode
+using TestRunner: TestStructureNode, RootNode, FactsCollectionNode, FactNode, ContextNode
 
 include("testComparisons.jl")
 
@@ -44,7 +44,7 @@ facts("Test handling tests") do
                                                         FactsCollectionNode(20,"",[])
                                                       ])
 
-  @fact get_tests_structure(sampleTestsFilePath) --> Vector{TestStructureNode}([
+  @fact get_tests_structure(sampleTestsFilePath) --> RootNode(Vector{TestStructureNode}([
                                                        FactsCollectionNode(6,"First facts group",
                                                        [FactNode(7, "First group first test"),FactNode(8, "First group second failing test")]),
                                                        FactsCollectionNode(11,"Second facts group",
@@ -52,20 +52,20 @@ facts("Test handling tests") do
                                                        FactsCollectionNode(16,"",
                                                        [FactNode(17,""),FactNode(18,"")]),
                                                        FactsCollectionNode(20,"",[])
-                                                     ]) "File structure parsing"
+                                                     ])) "File structure parsing"
  end
 
 
   context("Tests running") do
-    @fact run_all_tests(sampleTestsFilePath) --> Vector{TestStructureNode}([
-                                                         FactsCollectionNode(6,"First facts group",
-                                                         [FactNode(7, "First group first test", true, "First group first test"),FactNode(8, "First group second failing test", false, "First group second failing test")]),
+    @pending run_all_tests(sampleTestsFilePath) --> RootNode( Vector{TestStructureNode}([
+                                                         FactsCollectionNode(6, "First facts group",
+                                                          [FactNode(7, "First group first test", test_success), FactNode(8, "First group second failing test", test_failure)]),
                                                          FactsCollectionNode(11,"Second facts group",
-                                                         [FactNode(12,"Second group first test", true, "Second group first test"),FactNode(13, "",true)]),
-                                                         FactsCollectionNode(16,"",
-                                                         [FactNode(17,"",true),FactNode(18,"",false)]),
+                                                          [FactNode(12, "Second group first test", test_success), FactNode(13, "", test_success)]),
+                                                         FactsCollectionNode(16, "",
+                                                          [FactNode(17, "", test_success), FactNode(18, "", test_failure)]),
                                                          FactsCollectionNode(20,"",[])
-                                                       ])
+                                                       ])) "Tests running"
   end
 
   context("Exception handling") do
