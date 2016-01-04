@@ -39,12 +39,13 @@ FactNode(line::Int, name::AbstractString, result::RESULT, details::AbstractStrin
 FactNode(line::Int, name::AbstractString, result::FactCheck.Success) = FactNode(line, name, test_success, _get_details(line, result))
 FactNode(line::Int, name::AbstractString, result::FactCheck.Pending) = FactNode(line, name, test_pending, _get_details(line, result))
 FactNode(line::Int, name::AbstractString, result::FactCheck.Failure) = FactNode(line, name, test_failure, _get_details(line, result))
-FactNode(line::Int, name::AbstractString, result::FactCheck.Error)   = FactNode(line, name, test_error,   _get_details(line, result), sprint(showerror, result.err, result.backtrace))
+FactNode(line::Int, name::AbstractString, result::FactCheck.Error)   = FactNode(line, name, test_error,   _get_details(line, result), _get_stacktrace(result))
 FactNode(line::Int, name::AbstractString) = FactNode(line, name, test_not_run)
 
 _get_details(line::Int, result::FactCheck.Result) = _replace_line_number(line, sprint(show, result)) |> _strip_ascii_escape_codes
 _replace_line_number(line::Int, s::AbstractString) = replace(s, r"line:(-?\d+)", "line:$line")
 _strip_ascii_escape_codes(s::AbstractString) = replace(s, r"\x1b[^m]*m", "")
+_get_stacktrace(result::FactCheck.Error) = sprint(showerror, result.err, result.backtrace)
 
 get_tests_structure(test_file_path::AbstractString) = test_file_path |> _get_file_content |> _get_tests_structure |> RootNode
 
