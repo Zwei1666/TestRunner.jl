@@ -4,9 +4,9 @@ json(rootNode::RootNode) = map(to_dict, children(rootNode)) |> JSON.json
 
 function to_dict(factGroup::FactsCollectionNode)
   _children = factGroup |> children
-  childFactGroups = filter(child -> isa(child, TestRunner.FactsCollectionNode), _children)
-  childFacts = filter(child -> isa(child, TestRunner.FactNode), _children)
-  childContexts = filter(child -> isa(child, TestRunner.ContextNode), _children)
+  childFactGroups = filter(child -> isa(child, FactsCollectionNode), _children)
+  childFacts = filter(child -> isa(child, FactNode), _children)
+  childContexts = filter(child -> isa(child, ContextNode), _children)
 
   Dict(
     "name"       => factGroup |> name,
