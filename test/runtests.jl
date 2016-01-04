@@ -57,13 +57,22 @@ facts("Test handling tests") do
 
 
   context("Tests running") do
-    @pending run_all_tests(sampleTestsFilePath) --> RootNode( Vector{TestStructureNode}([
+    @fact run_all_tests(sampleTestsFilePath) --> RootNode( Vector{TestStructureNode}([
                                                          FactsCollectionNode(6, "First facts group",
-                                                          [FactNode(7, "First group first test", test_success), FactNode(8, "First group second failing test", test_failure)]),
+                                                          [
+                                                           FactNode(7, "First group first test", test_success, "    Success :: (line:7) :: Tests running :: First group first test :: fact was true\n      Expression: 1 --> 1\n        Expected: 1\n        Occurred: 1"),
+                                                           FactNode(8, "First group second failing test", test_failure, "    Failure :: (line:8) :: Tests running :: First group second failing test :: fact was false\n      Expression: 2 --> 1\n        Expected: 1\n        Occurred: 2")
+                                                          ]),
                                                          FactsCollectionNode(11,"Second facts group",
-                                                          [FactNode(12, "Second group first test", test_success), FactNode(13, "", test_success)]),
+                                                          [
+                                                           FactNode(12, "Second group first test", test_success, "    Success :: (line:12) :: Tests running :: Second group first test :: fact was true\n      Expression: 1 --> 1\n        Expected: 1\n        Occurred: 1"),
+                                                           FactNode(13, "", test_success, "    Success :: (line:13) :: Tests running :: fact was true\n      Expression: 2 --> 2\n        Expected: 2\n        Occurred: 2")
+                                                          ]),
                                                          FactsCollectionNode(16, "",
-                                                          [FactNode(17, "", test_success), FactNode(18, "", test_failure)]),
+                                                          [
+                                                           FactNode(17, "", test_success, "    Success :: (line:17) :: Tests running :: fact was true\n      Expression: 1 --> 1\n        Expected: 1\n        Occurred: 1"),
+                                                           FactNode(18, "", test_failure, "    Failure :: (line:18) :: Tests running :: fact was false\n      Expression: 2 --> 1\n        Expected: 1\n        Occurred: 2")
+                                                          ]),
                                                          FactsCollectionNode(20,"",[])
                                                        ])) "Tests running"
   end
