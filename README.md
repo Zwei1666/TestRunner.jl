@@ -7,7 +7,7 @@
 
 `TestRunner.jl` is a [Julia](http://julialang.org) test runner library used by standalone [Tk](https://github.com/JuliaLang/Tk.jl) based [GUITestRunner](https://github.com/meoke/GUITestRunner.jl) and [atom-julia-test-runner](https://github.com/mateuszkaleta/atom-julia-test-runner) extension for [Atom](https://github.com/atom/atom). It can parse [FactCheck](https://github.com/JuliaLang/FactCheck.jl) tests and run them returning results as an information rich, tree structure.
 
-MIT Licensed - see LICENSE.md
+MIT Licensed - see [LICENSE.md](https://github.com/gdziadkiewicz/TestRunner.jl/blob/master/LICENSE.md)
 
 **Installation**: `julia> Pkg.clone("https://github.com/gdziadkiewicz/TestRunner.jl")`
 
