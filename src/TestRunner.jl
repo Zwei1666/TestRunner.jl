@@ -5,7 +5,7 @@ export  get_tests_structure, run_all_tests, get_tests_structure_as_json, get_tes
         RESULT, test_success, test_failure, test_error, test_pending, test_not_run
 
 using FactCheck
-
+using Compat
 abstract TestStructureNode
 
 @enum RESULT test_success test_failure test_error test_pending test_not_run
@@ -49,7 +49,7 @@ _get_stacktrace(result::FactCheck.Error) = sprint(showerror, result.err, result.
 
 get_tests_structure(test_file_path::AbstractString) = test_file_path |> _get_file_content |> _get_tests_structure |> RootNode
 
-_get_file_content(test_file_path::AbstractString) = test_file_path |> readall |> (content -> "begin\n" * content * "\nend") |> parse |> _fixLineNumbers!
+_get_file_content(test_file_path::AbstractString) = test_file_path |> readstring |> (content -> "begin\n" * content * "\nend") |> parse |> _fixLineNumbers!
 
 function _fixLineNumbers!(expression_tree_node::Expr)
   map!(_fixLineNumbers!, expression_tree_node.args)
