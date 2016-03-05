@@ -21,6 +21,19 @@ sampleTests = quote
   end
 end
 
+if VERSION >= v"0.5-"
+  walk(f, leaf) = f(leaf)
+  function walk(f, ex::Expr)
+      ex = copy(ex)
+      ex.args = map((x)->walk(f,x), ex.args)
+      ex
+  end
+
+  remove_file_name(node::LineNumberNode) = LineNumberNode(:none, node.line)
+  remove_file_name(exp) = exp
+  sampleTests = walk(remove_file_name, sampleTests)
+end
+
 using TestRunner: TestStructureNode, RootNode, FactsCollectionNode, FactNode, ContextNode
 
 include("testComparisons.jl")
