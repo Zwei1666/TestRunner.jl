@@ -6,10 +6,6 @@ os:
 julia:
   - release
   - nightly
-matrix:
-  exclude:
-  - os: osx
-    julia: nightly
 notifications:
   email: false
 # uncomment the following lines to override the default test script
